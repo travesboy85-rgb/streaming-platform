@@ -17,7 +17,7 @@ COPY . /var/www/html
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Run composer install to generate vendor folder
+# Install dependencies (vendor folder)
 RUN composer install --no-dev --optimize-autoloader
 
 # Set Apache DocumentRoot to Laravel's public folder
@@ -34,5 +34,6 @@ RUN chown -R www-data:www-data /var/www/html \
 EXPOSE 80
 
 CMD ["apache2-foreground"]
+
 
 
