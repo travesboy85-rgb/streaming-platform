@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Creator Dashboard</title>
+  <!-- Correct CSS path -->
+  <link rel="stylesheet" href="/css/dashboard.css">
+</head>
+<body class="creator-theme">
+  <!-- Dashboard Header -->
+<header class="dashboard-header">
+  <h1>Creator Dashboard</h1>
+  <button class="btn" onclick="logout()">Logout</button>
+</header>
+
+<script>
+  function logout() {
+    // Clear authentication data
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('user');
+
+    // Redirect to login page
+    window.location.href = '/auth/index.html';
+  }
+</script>
+
+
+  <!-- Upload Section -->
+  <section id="upload-section">
+    <h2 class="video-section-title">Upload New Video</h2>
+    <form id="uploadForm" class="upload-form">
+      <input type="text" id="title" name="title" placeholder="Video Title" required>
+      <input type="file" id="video_file" name="video_file" accept="video/*" required>
+      <input type="url" id="thumbnail" name="thumbnail" placeholder="Thumbnail URL (optional)">
+      <input type="number" id="duration" name="duration" min="1" placeholder="Duration (minutes)">
+      <textarea id="description" name="description" placeholder="Description"></textarea>
+      <button type="submit">Upload Video</button>
+    </form>
+  </section>
+
+  <!-- Analytics Summary -->
+  <section id="creator-analytics">
+    <h2 class="video-section-title">Summary</h2>
+    <p>Total Videos: <span id="totalVideos">0</span></p>
+    <p>Total Views: <span id="totalViews">0</span></p>
+    <p>Average Rating: <span id="avgRating">0.0</span></p>
+  </section>
+
+  <!-- Video Grid -->
+  <section>
+    <h2 class="video-section-title">My Videos</h2>
+    <div id="videos" class="video-grid"></div>
+  </section>
+
+  <script src="/js/creator.js"></script>
+</body>
+</html>

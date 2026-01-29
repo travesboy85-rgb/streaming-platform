@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <!-- ✅ Responsive design -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MALISAFLIX - Video Player</title>
+  <!-- External stylesheet for streaming page -->
+  <link rel="stylesheet" href="/css/streaming.css">
+</head>
+<body>
+  <header>
+    <div class="container">
+      <nav class="nav">
+        <a href="/auth/index.html" class="logo">MALISAFLIX</a>
+        <div class="nav-links">
+          <a href="/dashboards/user.html">Dashboard</a>
+          <a href="/auth/index.html">Logout</a>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <div class="container">
+    <!-- Video Player Section -->
+    <section id="player-section">
+      <h2 class="section-title" id="player-title">Loading...</h2>
+      <div class="video-player">
+        <video id="player-video" class="player-video" controls autoplay>
+          <source id="videoSource" src="" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+      </div>
+      <p id="player-description"></p>
+      <button onclick="goBack()" class="btn btn-outline">Back to Dashboard</button>
+    </section>
+  </div>
+
+  <footer>
+    <div class="container">
+      <p>MALISAFLIX &copy; 2026 - Laravel Backend Streaming Platform</p>
+      <p>Educational Project - Backend Development Assignment</p>
+    </div>
+  </footer>
+
+  <script src="/js/api.js"></script>
+  <script>
+    // Parse ?id=123&preview=true from URL
+    const params = new URLSearchParams(window.location.search);
+    const videoId = params.get('id');
+    const preview = params.get('preview');
+
+    async function loadVideo() {
+      try {
+        // ✅ Pass preview flag for admins
+        const data = await apiRequest(`/videos/${videoId}${preview ? '?preview=true' : ''}`);
+        const video = data.data;
+
+        // Set title and description
+        document.getElementById('player-title').textContent = video.title || 'Untitled';
+        document.getElementById('player-description').textContent = video.description || '';
+
+        // ✅ Use playback_url primarily, fallback to url
+        const source = document.getElementById('videoSource');
+        source.src = video.playback_url || video.url;
+
+        const player = document.getElementById('player-video');
+        player.load();
+        player.play();
+      } catch (err) {
+        document.getElementById('player-title').textContent = 'Error loading video';
+        console.error('Video load error:', err);
+      }
+    }
+
+    function goBack() {
+      window.history.back();
+    }
+
+    loadVideo();
+  </script>
+</body>
+</html>
+

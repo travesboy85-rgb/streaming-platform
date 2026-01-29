@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Streamflix - User Dashboard</title>
+  <!-- ✅ Added viewport meta for mobile responsiveness -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/css/dashboard.css">
+</head>
+<body class="user-theme">
+  <!-- Header -->
+  <header class="dashboard-header">
+    <h1 id="dashboardTitle"></h1>
+    <button id="logoutBtn" class="btn btn-outline">Logout</button>
+  </header>
+
+  <!-- Search & Filter -->
+  <section id="search-filter">
+    <input type="text" id="searchBar" placeholder="Search videos..." />
+    <!-- ✅ Added accessible label for select -->
+    <label for="categoryFilter" class="visually-hidden">Filter by category</label>
+    <select id="categoryFilter" aria-label="Filter by category">
+      <option value="">All Categories</option>
+      <option value="movies">Movies</option>
+      <option value="series">Series</option>
+      <option value="documentary">Documentaries</option>
+    </select>
+    <button onclick="applyFilters()">Filter</button>
+  </section>
+
+  <!-- Video Grid -->
+  <main>
+    <!-- ✅ Removed inline style, moved to CSS -->
+    <h2 class="video-section-title">Available Videos</h2>
+    <div id="videos" class="video-grid"></div>
+  </main>
+
+  <!-- Scripts -->
+  <script src="/js/api.js"></script>
+  <script src="/js/dashboard.js"></script>
+  <script>
+    requireRole('user');
+    loadVideos('user');   // ✅ fetch videos uploaded by creators/admins
+    initHeader();         // ✅ initialize dynamic header + logout
+
+    function applyFilters() {
+      const search = document.getElementById('searchBar').value.toLowerCase();
+      const category = document.getElementById('categoryFilter').value;
+
+      const cards = document.querySelectorAll('.video-card');
+      cards.forEach(card => {
+        const title = card.querySelector('h3').textContent.toLowerCase();
+        const matchesSearch = !search || title.includes(search);
+        const matchesCategory = !category || card.dataset.category === category;
+
+        card.style.display = (matchesSearch && matchesCategory) ? 'block' : 'none';
+      });
+    }
+  </script>
+</body>
+</html>
