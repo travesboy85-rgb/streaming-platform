@@ -19,6 +19,9 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Install dependencies
 RUN composer install --no-dev --optimize-autoloader
+# Fix Laravel permissions
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
+    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
 # Override Apache config to point to public/
 RUN echo '<VirtualHost *:80>\n\
