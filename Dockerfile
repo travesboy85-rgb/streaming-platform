@@ -22,6 +22,9 @@ RUN composer install --no-dev --optimize-autoloader
 # Fix Laravel permissions
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
     && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+    # Run Laravel migrations
+RUN php artisan migrate --force
+
 
 # Override Apache config to point to public/
 RUN echo '<VirtualHost *:80>\n\
