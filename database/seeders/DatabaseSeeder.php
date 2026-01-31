@@ -14,13 +14,18 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Ensure the admin role exists
+        // ✅ Ensure roles exist
         Role::firstOrCreate([
             'name' => 'admin',
             'guard_name' => 'web',
         ]);
 
-        // Create the admin user if not already present
+        Role::firstOrCreate([
+            'name' => 'user',
+            'guard_name' => 'web',
+        ]);
+
+        // ✅ Create the admin user if not already present
         $admin = User::firstOrCreate(
             ['email' => 'admin@streaming.com'],
             [
@@ -29,11 +34,24 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        // Assign the admin role
         if (!$admin->hasRole('admin')) {
             $admin->assignRole('admin');
         }
 
-        echo "Admin user created successfully!\n";
+        // ✅ Create a default test user for mobile login
+        $testUser = User::firstOrCreate(
+            ['email' => 'test@example.com'],
+            [
+                'name' => 'Test User',
+                'password' => Hash::make('password'),
+            ]
+        );
+
+        if (!$testUser->hasRole('user')) {
+            $testUser->assignRole('user');
+        }
+
+        echo "Admin and Test User seeded successfully!\n";
     }
 }
+

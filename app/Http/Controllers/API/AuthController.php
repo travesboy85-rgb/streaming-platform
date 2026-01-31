@@ -50,7 +50,7 @@ class AuthController extends Controller
         ], 201);
     }
 
-    // ✅ Login with Sanctum token
+    // ✅ Login with Sanctum token (works for web + mobile)
     public function login(Request $request)
     {
         \Log::info('Login method triggered', $request->only('email'));
@@ -63,10 +63,7 @@ class AuthController extends Controller
         $credentials = $request->only('email', 'password');
         \Log::info('Attempting login with credentials', $credentials);
 
-        $result = Auth::guard('web')->attempt($credentials);
-        \Log::info('Auth attempt result: ' . ($result ? 'SUCCESS' : 'FAIL'));
-
-        if (! $result) {
+        if (! Auth::attempt($credentials)) {
             \Log::warning('Invalid credentials attempt', $credentials);
             return response()->json([
                 'status'  => 'error',
@@ -74,7 +71,7 @@ class AuthController extends Controller
             ], 401);
         }
 
-        $user = Auth::guard('web')->user();
+        $user = Auth::user();
         \Log::info('Authenticated user', ['id' => $user->id, 'email' => $user->email]);
 
         $token = $user->createToken('auth_token')->plainTextToken;
@@ -155,6 +152,7 @@ class AuthController extends Controller
         ]);
     }
 }
+
 
 
 
