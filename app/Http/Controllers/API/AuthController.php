@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Spatie\Permission\Models\Role;
@@ -18,7 +19,7 @@ class AuthController extends Controller
             'name'     => 'required|string|max:255',
             'email'    => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
-            'role'     => 'required|string|in:user,creator' // only allow user or creator
+            'role'     => 'required|string|in:user,creator'
         ]);
 
         if ($validator->fails()) {
@@ -34,7 +35,6 @@ class AuthController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        // Ensure role exists before assigning
         Role::firstOrCreate(['name' => $request->role, 'guard_name' => 'web']);
         $user->assignRole($request->role);
 
@@ -53,19 +53,29 @@ class AuthController extends Controller
     // ✅ Login with Sanctum token
     public function login(Request $request)
     {
+        \Log::info('Login method triggered', $request->only('email'));
+
         $request->validate([
             'email'    => 'required|email',
             'password' => 'required',
         ]);
 
-        $user = User::where('email', $request->email)->first();
+        $credentials = $request->only('email', 'password');
+        \Log::info('Attempting login with credentials', $credentials);
 
-        if (! $user || ! Hash::check($request->password, $user->password)) {
+        $result = Auth::guard('web')->attempt($credentials);
+        \Log::info('Auth attempt result: ' . ($result ? 'SUCCESS' : 'FAIL'));
+
+        if (! $result) {
+            \Log::warning('Invalid credentials attempt', $credentials);
             return response()->json([
                 'status'  => 'error',
                 'message' => 'Invalid credentials'
             ], 401);
         }
+
+        $user = Auth::guard('web')->user();
+        \Log::info('Authenticated user', ['id' => $user->id, 'email' => $user->email]);
 
         $token = $user->createToken('auth_token')->plainTextToken;
         $user->load('roles');
@@ -145,3 +155,6 @@ class AuthController extends Controller
         ]);
     }
 }
+
+
+
