@@ -9,10 +9,20 @@ use App\Http\Controllers\API\WatchHistoryController;
 use App\Http\Controllers\API\SubscriptionController;
 use App\Http\Controllers\API\AdminController;
 
-Route::prefix('v1')->middleware('api')->group(function () {
+Route::prefix('v1')->group(function () {
+
+    // ✅ Health check route
+    Route::get('/health', function () {
+        return response()->json([
+            'status'  => 'ok',
+            'message' => 'Service is healthy',
+            'time'    => now()->toDateTimeString()
+        ]);
+    });
 
     // ✅ Test route
     Route::get('/test', function () {
+        \Log::info('Test route hit');
         return response()->json([
             'message' => 'Streaming Platform API is working!',
             'version' => '1.0',
@@ -37,31 +47,23 @@ Route::prefix('v1')->middleware('api')->group(function () {
 
     // ✅ Protected routes (require authentication)
     Route::middleware('auth:sanctum')->group(function () {
-        // User management (self)
         Route::get('/user', [AuthController::class, 'user']);
         Route::post('/logout', [AuthController::class, 'logout']);
-
-        // Video interactions
         Route::post('/videos', [VideoController::class, 'store']);
         Route::put('/videos/{video}', [VideoController::class, 'update']);
         Route::delete('/videos/{video}', [VideoController::class, 'destroy']);
-
-        // Watch history
         Route::get('/watch-history', [WatchHistoryController::class, 'index']);
         Route::post('/videos/{video}/watch', [WatchHistoryController::class, 'store']);
-
-        // Subscription
         Route::post('/subscribe/{plan}', [SubscriptionController::class, 'subscribe']);
     });
 
     // ✅ Admin-only routes
     Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
-        // User management
         Route::get('/users', [AuthController::class, 'allUsers']);
         Route::delete('/users/{id}', [AuthController::class, 'deleteUser']);
-
-        // Analytics
         Route::get('/analytics', [AdminController::class, 'analytics']);
     });
 });
+
+
 
