@@ -49,12 +49,24 @@ Route::prefix('v1')->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
         Route::get('/user', [AuthController::class, 'user']);
         Route::post('/logout', [AuthController::class, 'logout']);
+
+        // Existing CRUD
         Route::post('/videos', [VideoController::class, 'store']);
         Route::put('/videos/{video}', [VideoController::class, 'update']);
         Route::delete('/videos/{video}', [VideoController::class, 'destroy']);
+
+        // Watch history
         Route::get('/watch-history', [WatchHistoryController::class, 'index']);
         Route::post('/videos/{video}/watch', [WatchHistoryController::class, 'store']);
+
+        // Subscription
         Route::post('/subscribe/{plan}', [SubscriptionController::class, 'subscribe']);
+
+        // ✅ New routes to match ApiService
+        Route::post('/videos/upload', [VideoController::class, 'upload']);   // Creator upload
+        Route::get('/videos/mine', [VideoController::class, 'mine']);       // Creator’s own videos
+        Route::get('/videos/pending', [VideoController::class, 'pending']); // Admin pending videos
+        Route::post('/videos/{id}/approve', [VideoController::class, 'approve']); // Admin approve
     });
 
     // ✅ Admin-only routes
@@ -64,6 +76,3 @@ Route::prefix('v1')->group(function () {
         Route::get('/analytics', [AdminController::class, 'analytics']);
     });
 });
-
-
-

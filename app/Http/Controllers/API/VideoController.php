@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Video;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\Storage;
 
 class VideoController extends Controller
 {
@@ -19,7 +20,7 @@ class VideoController extends Controller
         $videos->getCollection()->transform(function ($video) {
             $video->playback_url = URL::temporarySignedRoute(
                 'video.stream',
-                now()->addMinutes(30),   // ✅ valid for 30 minutes
+                now()->addMinutes(30),
                 ['id' => $video->id]
             );
             return $video;
@@ -45,13 +46,11 @@ class VideoController extends Controller
             return response()->json(['message' => 'Video not found'], 404);
         }
 
-        // ✅ Only increment views if not preview
         if (!$request->query('preview')) {
             $video->increment('views');
             $video->refresh();
         }
 
-        // ✅ Generate signed playback URL
         $video->playback_url = URL::temporarySignedRoute(
             'video.stream',
             now()->addMinutes(30),
@@ -64,7 +63,6 @@ class VideoController extends Controller
         ]);
     }
 
-    // ✅ Streaming method with signature validation
     public function stream(Request $request, $id)
     {
         if (! $request->hasValidSignature()) {
@@ -87,6 +85,63 @@ class VideoController extends Controller
         ]);
     }
 
-    // store(), update(), destroy() remain unchanged
+    // ✅ Creator: upload video
+    public function upload(Request $request)
+    {
+        $request->validate([
+            'video' => 'required|file|mimes:mp4,mov,avi|max:20000',
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+        ]);
+
+        $path = $request->file('video')->store('videos', 'public');
+
+        $video = Video::create([
+            'title' => $request->title,
+            'description' => $request->description,
+            'file_path' => $path,
+            'user_id' => auth()->id(),
+            'status' => 'pending', // default until admin approves
+        ]);
+
+        return response()->json([
+            'message' => 'Video uploaded successfully',
+            'data' => $video
+        ], 201);
+    }
+
+    // ✅ Creator: fetch own videos
+    public function mine()
+    {
+        $videos = Video::where('user_id', auth()->id())->get();
+        return response()->json([
+            'message' => 'Your videos retrieved successfully',
+            'data' => $videos
+        ]);
+    }
+
+    // ✅ Admin: fetch pending videos
+    public function pending()
+    {
+        $videos = Video::where('status', 'pending')->get();
+        return response()->json([
+            'message' => 'Pending videos retrieved successfully',
+            'data' => $videos
+        ]);
+    }
+
+    // ✅ Admin: approve video
+    public function approve($id)
+    {
+        $video = Video::findOrFail($id);
+        $video->status = 'approved';
+        $video->save();
+
+        return response()->json([
+            'message' => 'Video approved successfully',
+            'data' => $video
+        ]);
+    }
 }
+
 

@@ -27,6 +27,10 @@ return new class extends Migration
             $table->boolean('is_premium')->default(false); // Premium content
             $table->unsignedBigInteger('views')->default(0);
             $table->json('metadata')->nullable(); // Additional video info
+
+            // ✅ New column for approval workflow
+            $table->enum('status', ['pending', 'approved'])->default('pending');
+
             $table->timestamps();
             $table->softDeletes(); // For soft deletion
 
@@ -34,6 +38,7 @@ return new class extends Migration
             $table->index('user_id');
             $table->index('category_id');
             $table->index('is_premium');
+            $table->index('status');
         });
     }
 
@@ -45,4 +50,5 @@ return new class extends Migration
         Schema::dropIfExists('videos');
     }
 };
+
 
