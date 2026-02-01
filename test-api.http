@@ -1,0 +1,5 @@
+### Get Authenticated User
+GET https://streaming-platform-sirb.onrender.com/api/v1/user
+Authorization: Bearer 3|SKaOb4tjkgAYY7foDZSzfHO378xEDh5zYJXTcEub00c160d3
+Accept: application/json
+

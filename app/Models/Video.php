@@ -10,11 +10,14 @@ class Video extends Model
 {
     use HasFactory, SoftDeletes;
 
+    /**
+     * Mass assignable attributes
+     */
     protected $fillable = [
         'title',
         'description',
         'url',        // external video URL
-        'file_path',  // ✅ local upload path must be fillable
+        'file_path',  // local upload path
         'thumbnail',
         'duration',
         'category_id',
@@ -24,14 +27,20 @@ class Video extends Model
         'metadata'
     ];
 
+    /**
+     * Attribute casting
+     */
     protected $casts = [
         'is_premium' => 'boolean',
         'metadata'   => 'array',
         'views'      => 'integer',
-        'duration'   => 'integer'
+        'duration'   => 'integer',
+        'deleted_at' => 'datetime',
     ];
 
-    // Relationships
+    /**
+     * Relationships
+     */
     public function category()
     {
         return $this->belongsTo(Category::class);
@@ -46,4 +55,21 @@ class Video extends Model
     {
         return $this->hasMany(WatchHistory::class);
     }
+
+    /**
+     * Example: scope for approved videos
+     */
+    public function scopeApproved($query)
+    {
+        return $query->where('approved', true);
+    }
+
+    /**
+     * Example: scope for premium videos
+     */
+    public function scopePremium($query)
+    {
+        return $query->where('is_premium', true);
+    }
 }
+

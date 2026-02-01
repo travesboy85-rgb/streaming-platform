@@ -15,20 +15,25 @@ return new class extends Migration
             $table->id();
             $table->string('title');
             $table->text('description')->nullable();
-            
+
             // Support both external URLs and local uploads
             $table->string('url')->nullable();       // External video URL
             $table->string('file_path')->nullable(); // Local uploaded file path
-            
+
             $table->string('thumbnail')->nullable(); // Thumbnail image URL
-            $table->integer('duration')->default(0); // Duration in seconds
+            $table->unsignedInteger('duration')->default(0); // Duration in seconds
             $table->foreignId('category_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete(); // Uploader
             $table->boolean('is_premium')->default(false); // Premium content
-            $table->integer('views')->default(0);
+            $table->unsignedBigInteger('views')->default(0);
             $table->json('metadata')->nullable(); // Additional video info
             $table->timestamps();
             $table->softDeletes(); // For soft deletion
+
+            // ✅ Indexes for performance
+            $table->index('user_id');
+            $table->index('category_id');
+            $table->index('is_premium');
         });
     }
 
@@ -40,3 +45,4 @@ return new class extends Migration
         Schema::dropIfExists('videos');
     }
 };
+
