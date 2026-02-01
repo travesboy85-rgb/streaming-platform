@@ -26,7 +26,7 @@ Route::prefix('v1')->group(function () {
         return response()->json([
             'message' => 'Streaming Platform API is working!',
             'version' => '1.0',
-            'status' => 'online'
+            'status'  => 'online'
         ]);
     });
 
@@ -49,11 +49,11 @@ Route::prefix('v1')->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
         Route::get('/user', [AuthController::class, 'user']);
         Route::post('/logout', [AuthController::class, 'logout']);
+        Route::post('/logout-all', [AuthController::class, 'logoutAll']);
 
-        // Existing CRUD
-        Route::post('/videos', [VideoController::class, 'store']);
-        Route::put('/videos/{video}', [VideoController::class, 'update']);
-        Route::delete('/videos/{video}', [VideoController::class, 'destroy']);
+        // Creator routes
+        Route::post('/videos/upload', [VideoController::class, 'upload']);   // Creator upload
+        Route::get('/videos/mine', [VideoController::class, 'mine']);       // Creator’s own videos
 
         // Watch history
         Route::get('/watch-history', [WatchHistoryController::class, 'index']);
@@ -61,12 +61,6 @@ Route::prefix('v1')->group(function () {
 
         // Subscription
         Route::post('/subscribe/{plan}', [SubscriptionController::class, 'subscribe']);
-
-        // ✅ New routes to match ApiService
-        Route::post('/videos/upload', [VideoController::class, 'upload']);   // Creator upload
-        Route::get('/videos/mine', [VideoController::class, 'mine']);       // Creator’s own videos
-        Route::get('/videos/pending', [VideoController::class, 'pending']); // Admin pending videos
-        Route::post('/videos/{id}/approve', [VideoController::class, 'approve']); // Admin approve
     });
 
     // ✅ Admin-only routes
@@ -74,5 +68,10 @@ Route::prefix('v1')->group(function () {
         Route::get('/users', [AuthController::class, 'allUsers']);
         Route::delete('/users/{id}', [AuthController::class, 'deleteUser']);
         Route::get('/analytics', [AdminController::class, 'analytics']);
+
+        // Admin video moderation
+        Route::get('/videos/pending', [VideoController::class, 'pending']);
+        Route::post('/videos/{id}/approve', [VideoController::class, 'approve']);
     });
 });
+
