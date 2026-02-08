@@ -12,14 +12,14 @@ use Spatie\Permission\Models\Role;
 
 class AuthController extends Controller
 {
-    // ✅ Register new user/creator
+    // ✅ Register new user/creator/admin
     public function register(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'name'     => 'required|string|max:255',
             'email'    => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
-            'role'     => 'required|string|in:user,creator'
+            'role'     => 'required|string|in:user,creator,admin'
         ]);
 
         if ($validator->fails()) {
@@ -35,6 +35,7 @@ class AuthController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
+        // Ensure the role exists in Spatie
         Role::firstOrCreate(['name' => $request->role, 'guard_name' => 'web']);
         $user->assignRole($request->role);
 
@@ -152,6 +153,7 @@ class AuthController extends Controller
         ]);
     }
 }
+
 
 
 
