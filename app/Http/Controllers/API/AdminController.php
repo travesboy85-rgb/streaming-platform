@@ -9,6 +9,7 @@ use App\Models\WatchHistory;
 
 class AdminController extends Controller
 {
+    // ✅ Analytics summary for Admin Dashboard
     public function analytics()
     {
         $totalUsers    = User::count();
@@ -23,16 +24,15 @@ class AdminController extends Controller
         $avgDuration   = Video::avg('duration') ?? 0;
 
         return response()->json([
-            'status'         => 'success',
-            'message'        => 'Analytics data retrieved successfully',
-            'total_users'    => $totalUsers,
-            'total_admins'   => $totalAdmins,
-            'total_creators' => $totalCreators,
-            'total_regulars' => $totalRegulars,
-            'total_videos'   => $totalVideos,
-            'premium_videos' => $premiumVideos,
-            'total_views'    => $totalViews,
-            'avg_duration'   => round($avgDuration, 2),
+            'totalUsers'    => $totalUsers,
+            'totalAdmins'   => $totalAdmins,
+            'totalCreators' => $totalCreators,
+            'totalRegulars' => $totalRegulars,
+            'totalVideos'   => $totalVideos,
+            'premiumVideos' => $premiumVideos,
+            'totalViews'    => $totalViews,
+            'avgDuration'   => round($avgDuration, 2),
         ]);
     }
 }
+

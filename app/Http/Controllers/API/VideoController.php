@@ -60,11 +60,7 @@ class VideoController extends Controller
             ['id' => $video->id]
         );
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Video retrieved successfully',
-            'data' => $video
-        ]);
+        return response()->json($video); // ✅ return raw object for Retrofit
     }
 
     // ✅ Stream video file securely
@@ -111,33 +107,21 @@ class VideoController extends Controller
             'likes' => 0,
         ]);
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Video uploaded successfully',
-            'video' => $video
-        ], 201);
+        return response()->json($video, 201); // ✅ raw object for Retrofit
     }
 
     // ✅ Creator: fetch own videos
     public function mine()
     {
         $videos = Video::where('user_id', auth()->id())->get();
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Your videos retrieved successfully',
-            'data' => $videos
-        ]);
+        return response()->json($videos); // ✅ raw list for Retrofit
     }
 
     // ✅ Admin: fetch pending videos
     public function pending()
     {
         $videos = Video::where('status', 'pending')->get();
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Pending videos retrieved successfully',
-            'data' => $videos
-        ]);
+        return response()->json($videos); // ✅ raw list for Retrofit
     }
 
     // ✅ Admin: approve video
@@ -147,11 +131,7 @@ class VideoController extends Controller
         $video->status = 'approved';
         $video->save();
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Video approved successfully',
-            'video' => $video
-        ]);
+        return response()->json($video); // ✅ raw object for Retrofit
     }
 
     // ✅ Admin: delete video
@@ -163,10 +143,7 @@ class VideoController extends Controller
         }
 
         $video->delete();
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Video deleted successfully'
-        ]);
+        return response()->json(['message' => 'Video deleted successfully']);
     }
 
     // ✅ User: like video
@@ -178,13 +155,10 @@ class VideoController extends Controller
         }
 
         $video->increment('likes');
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Video liked successfully',
-            'video' => $video
-        ]);
+        return response()->json($video); // ✅ raw object for Retrofit
     }
 }
+
 
 
 
