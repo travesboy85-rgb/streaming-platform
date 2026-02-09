@@ -22,13 +22,18 @@ return new class extends Migration
 
             $table->string('thumbnail')->nullable(); // Thumbnail image URL
             $table->unsignedInteger('duration')->default(0); // Duration in seconds
+
+            // Relationships
             $table->foreignId('category_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete(); // Uploader
+
+            // Flags and counters
             $table->boolean('is_premium')->default(false); // Premium content
             $table->unsignedBigInteger('views')->default(0);
+            $table->unsignedBigInteger('likes')->default(0); // ✅ Added likes counter
             $table->json('metadata')->nullable(); // Additional video info
 
-            // ✅ New column for approval workflow
+            // ✅ Approval workflow
             $table->enum('status', ['pending', 'approved'])->default('pending');
 
             $table->timestamps();
@@ -50,5 +55,6 @@ return new class extends Migration
         Schema::dropIfExists('videos');
     }
 };
+
 
 
