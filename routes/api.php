@@ -51,16 +51,21 @@ Route::prefix('v1')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::post('/logout-all', [AuthController::class, 'logoutAll']);
 
-        // Creator routes
-        Route::post('/videos/upload', [VideoController::class, 'upload']);   // Creator upload
-        Route::get('/videos/mine', [VideoController::class, 'mine']);       // Creator’s own videos
-
         // Watch history
         Route::get('/watch-history', [WatchHistoryController::class, 'index']);
         Route::post('/videos/{video}/watch', [WatchHistoryController::class, 'store']);
 
         // Subscription
         Route::post('/subscribe/{plan}', [SubscriptionController::class, 'subscribe']);
+
+        // ✅ User: like video
+        Route::post('/videos/{id}/like', [VideoController::class, 'like']);
+    });
+
+    // ✅ Creator-only routes
+    Route::middleware(['auth:sanctum', 'role:creator'])->group(function () {
+        Route::post('/videos/upload', [VideoController::class, 'upload']);   // Creator upload
+        Route::get('/videos/mine', [VideoController::class, 'mine']);       // Creator’s own videos
     });
 
     // ✅ Admin-only routes
@@ -72,6 +77,8 @@ Route::prefix('v1')->group(function () {
         // Admin video moderation
         Route::get('/videos/pending', [VideoController::class, 'pending']);
         Route::post('/videos/{id}/approve', [VideoController::class, 'approve']);
+        Route::delete('/videos/{id}', [VideoController::class, 'destroy']); // ✅ delete video
     });
 });
+
 
