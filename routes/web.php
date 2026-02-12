@@ -19,4 +19,10 @@ Route::get('/run-seeder', function () {
     return 'Seeder executed!';
 });
 
+// 🩺 Health check route (no DB calls)
+Route::get('/health', function () {
+    return response()->json(['status' => 'ok']);
+});
+
+
 
