@@ -15,17 +15,22 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // ✅ Ensure roles exist
-        Role::firstOrCreate([
+        $adminRole = Role::firstOrCreate([
             'name' => 'admin',
             'guard_name' => 'web',
         ]);
 
-        Role::firstOrCreate([
+        $userRole = Role::firstOrCreate([
             'name' => 'user',
             'guard_name' => 'web',
         ]);
 
-        // ✅ Create the admin user if not already present
+        $creatorRole = Role::firstOrCreate([
+            'name' => 'creator',
+            'guard_name' => 'web',
+        ]);
+
+        // ✅ Create the admin user
         $admin = User::firstOrCreate(
             ['email' => 'admin@streaming.com'],
             [
@@ -33,12 +38,9 @@ class DatabaseSeeder extends Seeder
                 'password' => Hash::make('password123'),
             ]
         );
+        $admin->assignRole($adminRole);
 
-        if (!$admin->hasRole('admin')) {
-            $admin->assignRole('admin');
-        }
-
-        // ✅ Create a default test user for mobile login
+        // ✅ Create a default test user
         $testUser = User::firstOrCreate(
             ['email' => 'test@example.com'],
             [
@@ -46,12 +48,20 @@ class DatabaseSeeder extends Seeder
                 'password' => Hash::make('password'),
             ]
         );
+        $testUser->assignRole($userRole);
 
-        if (!$testUser->hasRole('user')) {
-            $testUser->assignRole('user');
-        }
+        // ✅ Create a demo creator
+        $creator = User::firstOrCreate(
+            ['email' => 'creator@streaming.com'],
+            [
+                'name' => 'Demo Creator',
+                'password' => Hash::make('password'),
+            ]
+        );
+        $creator->assignRole($creatorRole);
 
-        echo "Admin and Test User seeded successfully!\n";
+        echo "✅ Admin, Creator, and Test User seeded successfully!\n";
     }
 }
+
 

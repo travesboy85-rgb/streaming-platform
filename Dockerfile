@@ -1,9 +1,9 @@
 FROM php:8.2-apache
 
-# Install system dependencies
+# Install system dependencies + Postgres support
 RUN apt-get update && apt-get install -y \
-    libzip-dev unzip git curl libpng-dev libonig-dev libxml2-dev zip \
-    && docker-php-ext-install pdo_mysql mbstring zip exif pcntl bcmath gd
+    libzip-dev unzip git curl libpng-dev libonig-dev libxml2-dev zip libpq-dev \
+    && docker-php-ext-install pdo pdo_pgsql pgsql mbstring zip exif pcntl bcmath gd
 
 # Enable Apache mod_rewrite
 RUN a2enmod rewrite
@@ -40,10 +40,6 @@ RUN chown -R www-data:www-data /var/www/html \
 
 EXPOSE 80
 
-# ✅ Run migrations at container startup, then start Apache
-CMD php artisan migrate --force && apache2-foreground
-
-
-
-
+# ✅ Run migrations + seed demo accounts at container startup, then start Apache
+CMD php artisan migrate --force && php artisan db:seed --force && apache2-foreground
 

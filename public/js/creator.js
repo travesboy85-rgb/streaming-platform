@@ -1,4 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
+  const API_BASE = 'http://127.0.0.1:8000/api/v1';   // ✅ Absolute backend URL
+
   const token = localStorage.getItem('token');
   const currentUser = JSON.parse(localStorage.getItem('user'));
   const videoGrid = document.getElementById('videos');
@@ -16,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function loadVideos() {
     try {
-      const res = await fetch('/api/v1/videos', {
+      const res = await fetch(`${API_BASE}/videos/mine`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Accept': 'application/json'
@@ -26,8 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
       console.log('API response:', data);
 
       videoGrid.innerHTML = '';
-      const videos = Array.isArray(data.data) ? data.data : [];
-      const myVideos = videos.filter(v => v.user_id === currentUser.id);
+      const myVideos = Array.isArray(data) ? data : [];
 
       if (totalVideosEl) totalVideosEl.textContent = myVideos.length;
       if (totalViewsEl) totalViewsEl.textContent = myVideos.reduce((sum, v) => sum + (v.views || 0), 0);
@@ -41,9 +42,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const card = document.createElement('div');
         card.className = 'video-card';
 
-        // ✅ Always use playback_url from API
-        const playbackUrl = video.playback_url;
-        const thumbnailUrl = video.thumbnail || '/img/default-thumbnail.jpg';
+        const playbackUrl = video.playback_url || '';
+        const thumbnailUrl = video.thumbnail_url || '/img/default-thumbnail.jpg';
 
         card.innerHTML = `
           <h3>${video.title}</h3>
@@ -54,7 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <source src="${playbackUrl}" type="video/mp4">
             Your browser does not support the video tag.
           </video>
-          <p><strong>Duration:</strong> ${video.duration || 0} min</p>
+          <p><strong>Views:</strong> ${video.views || 0}</p>
           <button class="btn delete-btn" data-id="${video.id}">Delete</button>
         `;
 
@@ -70,7 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
           const videoId = e.target.getAttribute('data-id');
           if (confirm('Delete this video?')) {
             try {
-              const res = await fetch(`/api/v1/videos/${videoId}`, {
+              const res = await fetch(`${API_BASE}/videos/${videoId}`, {
                 method: 'DELETE',
                 headers: {
                   'Authorization': `Bearer ${token}`,
@@ -106,12 +106,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const formData = new FormData();
     formData.append('title', document.getElementById('title').value);
     formData.append('description', document.getElementById('description').value);
-    formData.append('duration', document.getElementById('duration').value);
+    formData.append('rating', document.getElementById('rating').value);
     formData.append('thumbnail', document.getElementById('thumbnail').value);
-    formData.append('video_file', document.getElementById('video_file').files[0]);
+    formData.append('file', document.getElementById('file').files[0]);   // ✅ must be "file"
 
     try {
-      const res = await fetch('/api/v1/videos', {
+      const res = await fetch(`${API_BASE}/videos`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -136,4 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 });
+
+
+
 

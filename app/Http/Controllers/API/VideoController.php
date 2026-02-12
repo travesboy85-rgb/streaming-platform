@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\URL;
 
 class VideoController extends Controller
 {
-    // ✅ Public: list approved videos
+    // Public: list approved videos
     public function index()
     {
         $videos = Video::with(['category', 'user'])
@@ -26,10 +26,10 @@ class VideoController extends Controller
             return $video;
         });
 
-        return response()->json($videos->items()); // raw list for Retrofit
+        return response()->json($videos->items());
     }
 
-    // ✅ Show single video
+    // Show single video
     public function show(Request $request, $id)
     {
         $video = Video::with(['category', 'user'])->find($id);
@@ -51,7 +51,7 @@ class VideoController extends Controller
         return response()->json($video);
     }
 
-    // ✅ Stream video file securely
+    // Stream video file securely
     public function stream(Request $request, $id)
     {
         if (! $request->hasValidSignature()) {
@@ -74,45 +74,72 @@ class VideoController extends Controller
         ]);
     }
 
-    // ✅ Creator: upload video
-    public function upload(Request $request)
+    // Creator: upload video
+    public function store(Request $request)
     {
         $request->validate([
-            'video' => 'required|file|mimes:mp4,mov,avi|max:51200',
+            'file' => 'required|file|mimes:mp4,mov,avi|max:51200',
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'thumbnail' => 'nullable|url',
+            'rating' => 'nullable|numeric|min:0|max:5',
         ]);
 
-        $path = $request->file('video')->store('videos', 'public');
+        $path = $request->file('file')->store('videos', 'public');
 
         $video = Video::create([
-            'title' => $request->title,
-            'description' => $request->description,
-            'file_path' => $path,
-            'user_id' => $request->user()->id, // ✅ safer with Sanctum
-            'status' => 'pending',
-            'views' => 0,
-            'likes' => 0,
-        ]);
+    'title' => $request->title,
+    'description' => $request->description,
+    'thumbnail_url' => $request->thumbnail,
+    'rating' => $request->rating,
+    'file_path' => $path,
+    'user_id' => auth()->id(),   // ✅ use this
+    'status' => 'pending',
+    'views' => 0,
+    'likes' => 0,
+]);
 
-        return response()->json($video, 201);
+
+        $video->playback_url = URL::temporarySignedRoute(
+            'video.stream',
+            now()->addMinutes(30),
+            ['id' => $video->id]
+        );
+
+        return response()->json([
+            'message' => 'Video uploaded successfully, pending approval.',
+            'video' => $video,
+        ], 201);
     }
 
-    // ✅ Creator: fetch own videos
+    // Creator: fetch own videos (pending + approved)
     public function mine(Request $request)
     {
-        $videos = Video::where('user_id', $request->user()->id)->get();
+        $videos = Video::where('user_id', $request->user()->id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $videos->transform(function ($video) {
+            $video->playback_url = URL::temporarySignedRoute(
+                'video.stream',
+                now()->addMinutes(30),
+                ['id' => $video->id]
+            );
+            return $video;
+        });
+
+        // Always return an array, even if empty
         return response()->json($videos);
     }
 
-    // ✅ Admin: fetch pending videos
+    // Admin: fetch pending videos
     public function pending()
     {
         $videos = Video::where('status', 'pending')->get();
         return response()->json($videos);
     }
 
-    // ✅ Admin: approve video
+    // Admin: approve video
     public function approve($id)
     {
         $video = Video::findOrFail($id);
@@ -122,7 +149,7 @@ class VideoController extends Controller
         return response()->json($video);
     }
 
-    // ✅ Admin: delete video
+    // Admin: delete video
     public function destroy($id)
     {
         $video = Video::find($id);
@@ -134,7 +161,7 @@ class VideoController extends Controller
         return response()->json(['message' => 'Video deleted successfully']);
     }
 
-    // ✅ User: like video
+    // User: like video
     public function like($id)
     {
         $video = Video::find($id);
@@ -146,6 +173,10 @@ class VideoController extends Controller
         return response()->json($video);
     }
 }
+
+
+
+
 
 
 
