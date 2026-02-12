@@ -40,6 +40,12 @@ RUN chown -R www-data:www-data /var/www/html \
 
 EXPOSE 80
 
-# ✅ Run migrations + seed demo accounts at container startup, then start Apache
-CMD php artisan migrate --force && php artisan db:seed --force && apache2-foreground
+# Copy retry script and make it executable
+COPY start.sh /usr/local/bin/start.sh
+RUN chmod +x /usr/local/bin/start.sh
+
+# ✅ Use retry script as entrypoint
+CMD ["sh", "/usr/local/bin/start.sh"]
+
+
 
