@@ -2,7 +2,8 @@ FROM php:8.2-apache
 
 # Install system dependencies + Postgres support
 RUN apt-get update && apt-get install -y \
-    libzip-dev unzip git curl libpng-dev libonig-dev libxml2-dev zip libpq-dev \
+    libzip-dev unzip git curl libpng-dev libonig-dev libxml2-dev zip \
+    libpq-dev postgresql-client \
     && docker-php-ext-install pdo pdo_pgsql pgsql mbstring zip exif pcntl bcmath gd
 
 # Enable Apache mod_rewrite
@@ -46,6 +47,7 @@ RUN chmod +x /usr/local/bin/start.sh
 
 # ✅ Use retry script as entrypoint
 CMD ["sh", "/usr/local/bin/start.sh"]
+
 
 
 
