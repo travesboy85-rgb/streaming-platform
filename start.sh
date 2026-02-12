@@ -1,8 +1,19 @@
 #!/bin/sh
 
-# Wait until Postgres is ready to accept connections
-until pg_isready -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USERNAME"; do
-  echo "Postgres not ready yet, retrying in 5s..."
+# Wait until Laravel can connect to Postgres
+until php -r "
+try {
+    new PDO(
+        'pgsql:host=' . getenv('DB_HOST') . ';port=' . getenv('DB_PORT') . ';dbname=' . getenv('DB_DATABASE') . ';sslmode=' . getenv('DB_SSLMODE'),
+        getenv('DB_USERNAME'),
+        getenv('DB_PASSWORD')
+    );
+    echo 'Postgres is ready';
+} catch (Exception \$e) {
+    echo 'Postgres not ready yet, retrying in 5s...';
+    exit(1);
+}
+"; do
   sleep 5
 done
 
@@ -12,4 +23,5 @@ php artisan db:seed --force
 
 # Finally start Apache
 exec apache2-foreground
+
 
