@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Background process: wait for Postgres and run migrations
+# Background process: wait for Postgres and run migrations + seeders
 (
   until php -r "
   try {
@@ -21,12 +21,16 @@
     sleep 5
   done
 
+  echo 'Running migrations...'
   php artisan migrate --force
-  php artisan db:seed --force
+
+  echo 'Seeding demo accounts...'
+  php artisan db:seed --class=DemoAccountsSeeder --force
 ) &
 
 # ✅ Start Apache immediately so Render detects port 80
 exec apache2-foreground
+
 
 
 
