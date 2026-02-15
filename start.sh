@@ -1,35 +1,22 @@
 #!/bin/sh
 
-# Background process: wait for Postgres and run migrations + seeders
-(
-  until php -r "
-  try {
-      new PDO(
-          'pgsql:host=' . getenv('DB_HOST') .
-          ';port=' . getenv('DB_PORT') .
-          ';dbname=' . getenv('DB_DATABASE') .
-          ';sslmode=' . getenv('DB_SSLMODE'),
-          getenv('DB_USERNAME'),
-          getenv('DB_PASSWORD')
-      );
-      echo 'Postgres is ready';
-  } catch (Exception \$e) {
-      echo 'Postgres not ready yet, retrying in 5s...';
-      exit(1);
-  }
-  "; do
-    sleep 5
-  done
+# Wait for Postgres to be ready
+until pg_isready -h $DB_HOST -p $DB_PORT -U $DB_USERNAME; do
+  echo "Postgres not ready yet, retrying in 5s..."
+  sleep 5
+done
 
-  echo 'Running migrations...'
-  php artisan migrate --force
+echo "Postgres is ready!"
 
-  echo 'Seeding demo accounts...'
-  php artisan db:seed --class=DemoAccountsSeeder --force
-) &
+# Run migrations
+php artisan migrate --force
 
-# ✅ Start Apache immediately so Render detects port 80
+# Seed demo accounts (optional for production)
+php artisan db:seed --class=DemoAccountsSeeder --force
+
+# Start Apache so Render detects port 80
 exec apache2-foreground
+
 
 
 
